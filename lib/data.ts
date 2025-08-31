@@ -33,6 +33,98 @@ export interface ShoppingItem {
   checked: boolean
 }
 
+export interface ProtocolInfo {
+  id: string
+  title: string
+  description: string
+  benefits: string[]
+  icon: string
+  color: string
+}
+
+export interface Testimonial {
+  id: string
+  name: string
+  age: number
+  result: string
+  duration: string
+  quote: string
+  avatar?: string
+}
+
+// Informações educativas sobre o protocolo
+export const protocolInfo: ProtocolInfo[] = [
+  {
+    id: "gingembre",
+    title: "Le Gingembre: L'Épice Brûle-Graisses",
+    description: "Le gingembre est la pierre angulaire du protocole, reconnu pour ses propriétés médicinales ancestrales et ses composés bioactifs (gingérol et shogaol).",
+    benefits: [
+      "Stimule la thermogenèse et accélère le métabolisme",
+      "Agit comme coupe-faim naturel en améliorant la satiété",
+      "Favorise la digestion et réduit les ballonnements",
+      "Aide à réguler la glycémie",
+      "Études cliniques montrent une réduction significative du poids"
+    ],
+    icon: "🫚",
+    color: "from-orange-400 to-orange-600"
+  },
+  {
+    id: "cafe",
+    title: "Le Café: Booster Naturel de l'Énergie",
+    description: "Le café agit comme un allié minceur grâce à sa teneur en caféine, un puissant agent thermogénique au-delà de son rôle stimulant.",
+    benefits: [
+      "La caféine augmente la dépense énergétique",
+      "Stimule la lipolyse (décomposition des graisses)",
+      "Améliore la vigilance et les performances physiques",
+      "Effet diurétique léger, aide à éliminer les toxines",
+      "Important: privilégier un café noir sans sucre ni crème"
+    ],
+    icon: "☕",
+    color: "from-amber-600 to-amber-800"
+  },
+  {
+    id: "the-vert",
+    title: "Le Thé Vert: Antioxydant Puissant",
+    description: "Le thé vert, boisson ancestrale asiatique, est reconnu pour ses bienfaits antioxydants et son rôle significatif dans la gestion du poids.",
+    benefits: [
+      "Riche en catéchines (EGCG) qui favorisent la combustion des graisses",
+      "Améliore la sensibilité à l'insuline",
+      "Effet détoxifiant, soutient le foie",
+      "Peut être consommé chaud ou froid",
+      "Protection cellulaire grâce aux antioxydants puissants"
+    ],
+    icon: "🍵",
+    color: "from-green-500 to-green-700"
+  }
+]
+
+export const testimonials: Testimonial[] = [
+  {
+    id: "julie",
+    name: "Julie",
+    age: 35,
+    result: "5 kg en 2 mois",
+    duration: "2 mois",
+    quote: "J'ai toujours eu du mal à perdre mes derniers kilos. En intégrant l'infusion gingembre-café-thé vert chaque matin et en début d'après-midi, combinée à ma marche quotidienne, j'ai perdu 5 kg en 2 mois ! Je me sens plus légère, plus énergique, et mes fringales ont pratiquement disparu."
+  },
+  {
+    id: "marie",
+    name: "Marie",
+    age: 42,
+    result: "3 kg en 6 semaines",
+    duration: "6 semaines",
+    quote: "Le protocole a transformé ma routine matinale. Non seulement j'ai perdu du poids, mais j'ai aussi remarqué une amélioration notable de ma digestion et une réduction des ballonnements. Je me sens plus concentrée et énergique toute la journée."
+  },
+  {
+    id: "sophie",
+    name: "Sophie",
+    age: 28,
+    result: "4 kg en 3 mois",
+    duration: "3 mois",
+    quote: "J'étais sceptique au début, mais les résultats sont là ! L'infusion m'aide à contrôler mon appétit et j'ai une meilleure gestion des portions. Le plus surprenant est le regain d'énergie et la sensation générale de bien-être."
+  }
+]
+
 export const recipes: Recipe[] = [
   // Jour 1 - Petit-déjeuner Premium
   {

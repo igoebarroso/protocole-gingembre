@@ -1,21 +1,21 @@
 "use client"
 
+import { useState } from "react"
 import { motion } from "framer-motion"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { Home, Utensils, Trophy, List, User, LogOut } from "lucide-react"
+import { Home, ChefHat, ShoppingCart, Trophy, BookOpen, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 export default function BottomNavigation() {
   const pathname = usePathname()
-  const router = useRouter()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const handleLogout = () => {
+    setIsLoggingOut(true)
     localStorage.removeItem("user-authenticated")
-    localStorage.removeItem("user-email")
-    localStorage.removeItem("user-id")
-    localStorage.removeItem("user-name")
-    router.push("/login")
+    localStorage.removeItem("onboarding-completed")
+    window.location.href = "/login"
   }
 
   const navItems = [
@@ -23,129 +23,74 @@ export default function BottomNavigation() {
       href: "/accueil",
       icon: Home,
       label: "Accueil",
-      active: pathname === "/accueil"
+      isActive: pathname === "/accueil"
     },
     {
       href: "/recettes",
-      icon: Utensils,
+      icon: ChefHat,
       label: "Recettes",
-      active: pathname === "/recettes"
+      isActive: pathname === "/recettes" || pathname.startsWith("/recettes/")
+    },
+    {
+      href: "/protocole",
+      icon: BookOpen,
+      label: "Protocole",
+      isActive: pathname === "/protocole"
     },
     {
       href: "/defis",
       icon: Trophy,
       label: "Défis",
-      active: pathname === "/defis"
+      isActive: pathname === "/defis"
     },
     {
       href: "/liste",
-      icon: List,
+      icon: ShoppingCart,
       label: "Liste",
-      active: pathname === "/liste"
-    },
-    {
-      href: "/profil",
-      icon: User,
-      label: "Profil",
-      active: pathname === "/profil"
+      isActive: pathname === "/liste"
     }
   ]
 
   return (
-    <motion.nav
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.8 }}
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-gray-200/50 safe-area-bottom"
-    >
-      <div className="max-w-md mx-auto px-4 py-2">
-        <div className="flex items-center justify-between">
-          {navItems.map((item) => (
-            <motion.div
-              key={item.href}
-              layoutId={item.active ? "activeTab" : undefined}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Link href={item.href}>
+    <div className="fixed bottom-0 left-0 right-0 z-50">
+      <div className="max-w-md mx-auto">
+        <div className="bg-white/90 backdrop-blur-lg border-t border-border/50 shadow-lg">
+          <div className="flex items-center justify-between p-2">
+            {navItems.map((item) => (
+              <Link key={item.href} href={item.href}>
                 <motion.div
-                  className={`relative flex flex-col items-center p-3 rounded-2xl transition-all duration-200 ${
-                    item.active
-                      ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg"
-                      : "text-gray-600 hover:text-orange-600 hover:bg-orange-50"
-                  }`}
-                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
+                  className={`flex flex-col items-center p-2 rounded-lg transition-all ${
+                    item.isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
-                  {item.active && (
-                    <motion.div
-                      layoutId="activeBackground"
-                      className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                  <motion.div
-                    className="relative z-10"
-                    animate={{
-                      scale: item.active ? 1.1 : 1,
-                      rotate: item.active ? 5 : 0
-                    }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <item.icon className="w-6 h-6" />
-                  </motion.div>
-                  <motion.span
-                    className="relative z-10 text-xs font-medium mt-1"
-                    animate={{
-                      opacity: item.active ? 1 : 0.7
-                    }}
-                  >
-                    {item.label}
-                  </motion.span>
-                  
-                  {/* Active indicator */}
-                  {item.active && (
-                    <motion.div
-                      layoutId="activeIndicator"
-                      className="absolute -top-1 w-1 h-1 bg-white rounded-full"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
+                  <item.icon className="h-5 w-5 mb-1" />
+                  <span className="text-xs font-medium">{item.label}</span>
                 </motion.div>
               </Link>
-            </motion.div>
-          ))}
-
-          {/* Logout Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-          >
+            ))}
+            
             <motion.div
-              whileHover={{ scale: 1.05, y: -2 }}
+              whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
               <Button
-                onClick={handleLogout}
                 variant="ghost"
-                size="sm"
-                className="flex flex-col items-center p-3 rounded-2xl text-gray-600 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                size="icon"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50"
               >
-                <LogOut className="w-6 h-6" />
-                <span className="text-xs font-medium mt-1">Déconnexion</span>
+                <LogOut className="h-5 w-5" />
               </Button>
             </motion.div>
-          </motion.div>
+          </div>
         </div>
       </div>
-
-      {/* Gradient overlay for visual appeal */}
-      <div className="absolute inset-0 bg-gradient-to-t from-white/50 to-transparent pointer-events-none" />
-    </motion.nav>
+    </div>
   )
 }
 
