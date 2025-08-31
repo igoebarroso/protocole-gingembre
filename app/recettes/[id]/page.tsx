@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Clock, ChefHat, Play, Pause, RotateCcw, Check } from "lucide-react"
+import { ArrowLeft, Clock, ChefHat, Play, Pause, RotateCcw, Check, Crown, Star, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -24,10 +24,17 @@ export default function RecipePage({ params }: RecipePageProps) {
   const [isTimerRunning, setIsTimerRunning] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState(0)
   const [completedSteps, setCompletedSteps] = useState<number[]>([])
+  const [favorites, setFavorites] = useState<string[]>([])
 
   useEffect(() => {
     const foundRecipe = recipes.find((r) => r.id === params.id)
     setRecipe(foundRecipe || null)
+    
+    // Charger les favoris
+    const savedFavorites = localStorage.getItem("favorite-recipes")
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites))
+    }
   }, [params.id])
 
   useEffect(() => {
@@ -37,7 +44,6 @@ export default function RecipePage({ params }: RecipePageProps) {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
             setIsTimerRunning(false)
-            // Notification sonore ou visuelle
             return 0
           }
           return prev - 1
@@ -49,8 +55,9 @@ export default function RecipePage({ params }: RecipePageProps) {
 
   if (!recipe) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
         <div className="text-center">
+          <div className="text-6xl mb-4">🍽️</div>
           <p className="text-muted-foreground mb-4">Recette non trouvée</p>
           <Link href="/recettes">
             <Button>Retour aux recettes</Button>
@@ -80,6 +87,15 @@ export default function RecipePage({ params }: RecipePageProps) {
     }
   }
 
+  const toggleFavorite = () => {
+    const newFavorites = favorites.includes(recipe.id)
+      ? favorites.filter(id => id !== recipe.id)
+      : [...favorites, recipe.id]
+    
+    setFavorites(newFavorites)
+    localStorage.setItem("favorite-recipes", JSON.stringify(newFavorites))
+  }
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -87,6 +103,15 @@ export default function RecipePage({ params }: RecipePageProps) {
   }
 
   const progressPercentage = (completedSteps.length / recipe.steps.length) * 100
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case "facile": return "bg-green-100 text-green-800"
+      case "moyen": return "bg-yellow-100 text-yellow-800"
+      case "difficile": return "bg-red-100 text-red-800"
+      default: return "bg-gray-100 text-gray-800"
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
@@ -106,14 +131,38 @@ export default function RecipePage({ params }: RecipePageProps) {
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <Badge variant="secondary" className="bg-white/20 backdrop-blur-sm border-white/20">
-              Jour {recipe.day}
-            </Badge>
+            
+            <div className="flex gap-2">
+              {recipe.premium && (
+                <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0">
+                  <Crown className="h-3 w-3 mr-1" />
+                  Premium
+                </Badge>
+              )}
+              <Badge variant="secondary" className="bg-white/20 backdrop-blur-sm border-white/20">
+                Jour {recipe.day}
+              </Badge>
+            </div>
           </div>
 
           {/* Titre et infos */}
           <div className="absolute bottom-4 left-4 right-4 text-white">
-            <h1 className="text-2xl font-bold mb-2">{recipe.name}</h1>
+            <div className="flex items-start justify-between mb-2">
+              <h1 className="text-2xl font-bold">{recipe.name}</h1>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-white hover:bg-white/20"
+                onClick={toggleFavorite}
+              >
+                <Star className={`h-4 w-4 ${favorites.includes(recipe.id) ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+              </Button>
+            </div>
+            
+            {recipe.description && (
+              <p className="text-sm opacity-90 mb-2 line-clamp-2">{recipe.description}</p>
+            )}
+            
             <div className="flex items-center gap-4 text-sm">
               <div className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
@@ -123,6 +172,11 @@ export default function RecipePage({ params }: RecipePageProps) {
                 <ChefHat className="h-4 w-4" />
                 {recipe.calories} cal
               </div>
+              {recipe.difficulty && (
+                <Badge variant="outline" className={`text-xs ${getDifficultyColor(recipe.difficulty)} bg-white/20`}>
+                  {recipe.difficulty}
+                </Badge>
+              )}
             </div>
           </div>
         </div>
@@ -130,7 +184,7 @@ export default function RecipePage({ params }: RecipePageProps) {
         <div className="p-4 space-y-6">
           {/* Progression */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
+            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Progression</span>
@@ -151,7 +205,7 @@ export default function RecipePage({ params }: RecipePageProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
               >
-                <Card className="bg-primary text-primary-foreground">
+                <Card className="bg-gradient-to-r from-primary to-secondary text-primary-foreground">
                   <CardContent className="p-4 text-center">
                     <div className="text-3xl font-bold mb-2">{formatTime(timeRemaining)}</div>
                     <div className="flex justify-center gap-2">
@@ -170,9 +224,12 @@ export default function RecipePage({ params }: RecipePageProps) {
 
           {/* Ingrédients */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card>
+            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg">
               <CardHeader>
-                <CardTitle>Ingrédients</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-primary" />
+                  Ingrédients
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {recipe.ingredients.map((ingredient, index) => (
@@ -193,9 +250,12 @@ export default function RecipePage({ params }: RecipePageProps) {
 
           {/* Étapes de préparation */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card>
+            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-lg">
               <CardHeader>
-                <CardTitle>Préparation étape par étape</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <ChefHat className="h-5 w-5 text-primary" />
+                  Préparation étape par étape
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {recipe.steps.map((step, index) => (
@@ -271,7 +331,7 @@ export default function RecipePage({ params }: RecipePageProps) {
             className="flex flex-wrap gap-2"
           >
             {recipe.tags.map((tag, index) => (
-              <Badge key={index} variant="secondary">
+              <Badge key={index} variant="secondary" className="bg-primary/10 text-primary">
                 #{tag}
               </Badge>
             ))}

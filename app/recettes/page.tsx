@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, Filter, Clock, Flame, ChefHat, Star } from "lucide-react"
+import { Search, Filter, Clock, Flame, ChefHat, Star, Crown, Zap } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -36,109 +36,73 @@ export default function RecettesPage() {
 
   const filteredRecipes = recipes.filter(recipe => {
     const matchesSearch = recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         recipe.description.toLowerCase().includes(searchTerm.toLowerCase())
+                         (recipe.description && recipe.description.toLowerCase().includes(searchTerm.toLowerCase()))
     const matchesCategory = selectedCategory === "Toutes" || recipe.category === selectedCategory.toLowerCase().replace("é", "e")
     return matchesSearch && matchesCategory
   })
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case "petit-dej": return "bg-orange-100 text-orange-700"
-      case "dejeuner": return "bg-green-100 text-green-700"
-      case "diner": return "bg-blue-100 text-blue-700"
-      case "collation": return "bg-purple-100 text-purple-700"
-      default: return "bg-gray-100 text-gray-700"
+      case "petit-dej": return "bg-orange-100 text-orange-800"
+      case "dejeuner": return "bg-green-100 text-green-800"
+      case "diner": return "bg-purple-100 text-purple-800"
+      case "snack": return "bg-blue-100 text-blue-800"
+      default: return "bg-gray-100 text-gray-800"
     }
   }
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "petit-dej": return "🌅"
-      case "dejeuner": return "☀️"
-      case "diner": return "🌙"
-      case "collation": return "🍎"
-      default: return "🍽️"
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case "facile": return "bg-green-100 text-green-800"
+      case "moyen": return "bg-yellow-100 text-yellow-800"
+      case "difficile": return "bg-red-100 text-red-800"
+      default: return "bg-gray-100 text-gray-800"
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/5 pb-20">
-      <div className="max-w-md mx-auto p-4 space-y-6 sm:max-w-lg lg:max-w-xl">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center pt-4 sm:pt-6"
-        >
-          <motion.h1 
-            className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            Recettes
-          </motion.h1>
-          <motion.p 
-            className="text-muted-foreground text-sm sm:text-base"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            Découvrez nos recettes santé au gingembre
-          </motion.p>
-        </motion.div>
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/10">
+      <div className="max-w-md mx-auto">
+        {/* Header avec recherche et filtres */}
+        <div className="p-4 space-y-4">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Recettes Premium
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Découvrez nos recettes exclusives au gingembre
+            </p>
+          </div>
 
-        {/* Search */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
+          {/* Barre de recherche */}
           <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Rechercher une recette..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-white/80 backdrop-blur-sm border-0 shadow-lg"
             />
           </div>
-        </motion.div>
 
-        {/* Categories */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+          {/* Filtres par catégorie */}
           <div className="flex gap-2 overflow-x-auto pb-2">
-            {categories.map((category, index) => (
-              <motion.div
+            {categories.map((category) => (
+              <Button
                 key={category}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * index }}
+                variant={selectedCategory === category ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(category)}
+                className="whitespace-nowrap bg-white/80 backdrop-blur-sm"
               >
-                <Button
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
-                  className="whitespace-nowrap"
-                >
-                  {category}
-                </Button>
-              </motion.div>
+                {category}
+              </Button>
             ))}
           </div>
-        </motion.div>
+        </div>
 
-        {/* Recipes Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="space-y-4"
-        >
+        {/* Liste des recettes */}
+        <div className="px-4 pb-20 space-y-4">
           <AnimatePresence>
             {filteredRecipes.map((recipe, index) => (
               <motion.div
@@ -147,50 +111,60 @@ export default function RecettesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-                className="transform transition-all duration-300"
               >
                 <Link href={`/recettes/${recipe.id}`}>
-                  <Card className="backdrop-blur-sm bg-white/80 shadow-lg border-0 overflow-hidden cursor-pointer">
+                  <Card className="overflow-hidden bg-white/90 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
                     <div className="relative">
-                      <div className="w-full h-48 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                        <ChefHat className="h-16 w-16 text-primary/50" />
-                      </div>
+                      <img
+                        src={recipe.image || "/placeholder.svg"}
+                        alt={recipe.name}
+                        className="w-full h-48 object-cover"
+                      />
                       
-                      {/* Favorite button */}
-                      <motion.button
-                        onClick={(e) => {
-                          e.preventDefault()
-                          toggleFavorite(recipe.id)
-                        }}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="absolute top-3 right-3 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-lg"
-                      >
-                        <Star 
-                          className={`h-5 w-5 ${
-                            favorites.includes(recipe.id) 
-                              ? "fill-yellow-400 text-yellow-400" 
-                              : "text-gray-400"
-                          }`} 
-                        />
-                      </motion.button>
+                      {/* Badge Premium */}
+                      {recipe.premium && (
+                        <div className="absolute top-3 right-3">
+                          <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0">
+                            <Crown className="h-3 w-3 mr-1" />
+                            Premium
+                          </Badge>
+                        </div>
+                      )}
 
-                      {/* Category badge */}
+                      {/* Badge Jour */}
                       <div className="absolute top-3 left-3">
-                        <Badge className={`${getCategoryColor(recipe.category)}`}>
-                          {getCategoryIcon(recipe.category)} {recipe.category.replace("-", " ")}
+                        <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm">
+                          Jour {recipe.day}
                         </Badge>
                       </div>
+
+                      {/* Overlay gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     </div>
 
                     <CardContent className="p-4">
                       <div className="space-y-3">
                         <div>
-                          <h3 className="font-semibold text-lg mb-1">{recipe.name}</h3>
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {recipe.description}
-                          </p>
+                          <div className="flex items-start justify-between mb-2">
+                            <h3 className="font-semibold text-lg mb-1 line-clamp-2">{recipe.name}</h3>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-primary"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                toggleFavorite(recipe.id)
+                              }}
+                            >
+                              <Star className={`h-4 w-4 ${favorites.includes(recipe.id) ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                            </Button>
+                          </div>
+                          
+                          {recipe.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                              {recipe.description}
+                            </p>
+                          )}
                         </div>
 
                         <div className="flex items-center justify-between">
@@ -205,17 +179,33 @@ export default function RecettesPage() {
                             </div>
                           </div>
                           
-                          <Badge variant="secondary" className="text-xs">
-                            Jour {recipe.day}
-                          </Badge>
+                          {recipe.difficulty && (
+                            <Badge variant="outline" className={`text-xs ${getDifficultyColor(recipe.difficulty)}`}>
+                              {recipe.difficulty}
+                            </Badge>
+                          )}
                         </div>
 
-                        {/* Ingredients preview */}
+                        {/* Ingrédients principaux */}
                         <div className="pt-2 border-t border-border/50">
                           <p className="text-xs text-muted-foreground">
                             <strong>Ingrédients principaux:</strong> {recipe.ingredients.slice(0, 3).join(", ")}
                             {recipe.ingredients.length > 3 && "..."}
                           </p>
+                        </div>
+
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-1">
+                          {recipe.tags.slice(0, 3).map((tag, tagIndex) => (
+                            <Badge key={tagIndex} variant="secondary" className="text-xs bg-primary/10 text-primary">
+                              #{tag}
+                            </Badge>
+                          ))}
+                          {recipe.tags.length > 3 && (
+                            <Badge variant="secondary" className="text-xs">
+                              +{recipe.tags.length - 3}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -231,43 +221,17 @@ export default function RecettesPage() {
               animate={{ opacity: 1 }}
               className="text-center py-12"
             >
-              <ChefHat className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
-              <p className="text-muted-foreground">Aucune recette trouvée</p>
-              <p className="text-sm text-muted-foreground mt-1">
+              <div className="text-6xl mb-4">🍽️</div>
+              <h3 className="text-lg font-semibold mb-2">Aucune recette trouvée</h3>
+              <p className="text-muted-foreground">
                 Essayez de modifier vos critères de recherche
               </p>
             </motion.div>
           )}
-        </motion.div>
+        </div>
 
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Card className="backdrop-blur-sm bg-white/80 shadow-lg border-0">
-            <CardContent className="p-4">
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <p className="text-2xl font-bold text-primary">{recipes.length}</p>
-                  <p className="text-xs text-muted-foreground">Recettes</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-secondary">{favorites.length}</p>
-                  <p className="text-xs text-muted-foreground">Favoris</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-blue-500">{filteredRecipes.length}</p>
-                  <p className="text-xs text-muted-foreground">Affichées</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+        <BottomNavigation />
       </div>
-
-      <BottomNavigation />
     </div>
   )
 }
