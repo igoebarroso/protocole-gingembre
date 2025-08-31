@@ -1,351 +1,309 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Eye, EyeOff, Lock, Mail, Smartphone, User, Sparkles } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabase"
+import { isSupabaseReady } from "@/lib/supabase"
 import { toast } from "sonner"
-import { supabase, isSupabaseReady } from "@/lib/supabase"
+import InstallAppGuide from "@/components/install-app-guide"
 
 export default function LoginPage() {
-  const [isLogin, setIsLogin] = useState(true)
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    name: "",
-    confirmPassword: ""
-  })
-  
   const router = useRouter()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [showInstallGuide, setShowInstallGuide] = useState(false)
+  const [hasSeenInstallGuide, setHasSeenInstallGuide] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    // Vérifier si l'utilisateur a déjà vu le guide d'installation
+    const seen = localStorage.getItem("has-seen-install-guide")
+    if (!seen) {
+      setShowInstallGuide(true)
+    }
+  }, [])
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
       if (isSupabaseReady()) {
-        // Usar Supabase se configurado
-        if (isLogin) {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-          })
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
 
-          if (error) throw error
-
-          if (data.user) {
-            localStorage.setItem("user-authenticated", "true")
-            localStorage.setItem("user-email", data.user.email || "")
-            localStorage.setItem("user-id", data.user.id)
-            toast.success("Connexion réussie !")
-            router.push("/accueil")
-          }
+        if (error) {
+          toast.error("Erreur de connexion: " + error.message)
         } else {
-          if (formData.password !== formData.confirmPassword) {
-            toast.error("Les mots de passe ne correspondent pas")
-            return
-          }
-
-          const { data, error } = await supabase.auth.signUp({
-            email: formData.email,
-            password: formData.password,
-            options: {
-              data: {
-                name: formData.name,
-              }
-            }
-          })
-
-          if (error) throw error
-
-          if (data.user) {
-            localStorage.setItem("user-authenticated", "true")
-            localStorage.setItem("user-email", data.user.email || "")
-            localStorage.setItem("user-id", data.user.id)
-            localStorage.setItem("user-name", formData.name)
-            toast.success("Compte créé avec succès !")
-            router.push("/accueil")
-          }
+          toast.success("Connexion réussie!")
+          localStorage.setItem("user-authenticated", "true")
+          router.push("/accueil")
         }
       } else {
-        // Modo local (sem Supabase)
-        if (isLogin) {
-          if (formData.email && formData.password) {
-            localStorage.setItem("user-authenticated", "true")
-            localStorage.setItem("user-email", formData.email)
-            localStorage.setItem("user-id", `local-${Date.now()}`)
-            toast.success("Connexion réussie !")
-            router.push("/accueil")
-          } else {
-            toast.error("Veuillez remplir tous les champs")
-          }
+        // Mode local
+        if (email && password) {
+          localStorage.setItem("user-authenticated", "true")
+          localStorage.setItem("user-email", email)
+          toast.success("Connexion réussie!")
+          router.push("/accueil")
         } else {
-          if (formData.email && formData.password && formData.name && formData.password === formData.confirmPassword) {
-            localStorage.setItem("user-authenticated", "true")
-            localStorage.setItem("user-email", formData.email)
-            localStorage.setItem("user-id", `local-${Date.now()}`)
-            localStorage.setItem("user-name", formData.name)
-            toast.success("Compte créé avec succès !")
-            router.push("/accueil")
-          } else {
-            toast.error("Veuillez vérifier vos informations")
-          }
+          toast.error("Veuillez remplir tous les champs")
         }
       }
-    } catch (error: any) {
-      toast.error(error.message || "Une erreur s'est produite")
+    } catch (error) {
+      toast.error("Erreur de connexion")
     } finally {
       setIsLoading(false)
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-orange-200/30 to-amber-300/30 rounded-full blur-3xl"
-          animate={{
-            x: [0, 30, 0],
-            y: [0, -30, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-yellow-200/30 to-orange-300/30 rounded-full blur-3xl"
-          animate={{
-            x: [0, -30, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-amber-200/20 to-orange-200/20 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 30,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-      </div>
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
 
-      {/* Floating Sparkles */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(6)].map((_, i) => (
+    try {
+      if (isSupabaseReady()) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+        })
+
+        if (error) {
+          toast.error("Erreur d'inscription: " + error.message)
+        } else {
+          toast.success("Inscription réussie! Vérifiez votre email.")
+        }
+      } else {
+        // Mode local
+        if (email && password) {
+          localStorage.setItem("user-authenticated", "true")
+          localStorage.setItem("user-email", email)
+          toast.success("Inscription réussie!")
+          router.push("/accueil")
+        } else {
+          toast.error("Veuillez remplir tous les champs")
+        }
+      }
+    } catch (error) {
+      toast.error("Erreur d'inscription")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleInstallGuideClose = () => {
+    setShowInstallGuide(false)
+    localStorage.setItem("has-seen-install-guide", "true")
+  }
+
+  const handleInstallGuideContinue = () => {
+    setShowInstallGuide(false)
+    localStorage.setItem("has-seen-install-guide", "true")
+  }
+
+  return (
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/10 relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0">
           <motion.div
-            key={i}
-            className="absolute text-amber-400/60"
-            style={{
-              left: `${20 + i * 15}%`,
-              top: `${10 + i * 20}%`,
-            }}
+            className="absolute top-20 left-10 w-20 h-20 bg-primary/10 rounded-full"
             animate={{
-              y: [0, -20, 0],
-              opacity: [0.3, 1, 0.3],
-              scale: [0.8, 1.2, 0.8],
+              x: [0, 30, 0],
+              y: [0, -30, 0],
             }}
             transition={{
-              duration: 3 + i * 0.5,
+              duration: 6,
               repeat: Infinity,
               ease: "easeInOut",
-              delay: i * 0.3,
             }}
-          >
-            <Sparkles size={16 + i * 2} />
-          </motion.div>
-        ))}
-      </div>
+          />
+          <motion.div
+            className="absolute top-40 right-20 w-16 h-16 bg-secondary/10 rounded-full"
+            animate={{
+              x: [0, -20, 0],
+              y: [0, 20, 0],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          <motion.div
+            className="absolute bottom-20 left-20 w-12 h-12 bg-primary/5 rounded-full"
+            animate={{
+              x: [0, 15, 0],
+              y: [0, -15, 0],
+            }}
+            transition={{
+              duration: 7,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        </div>
 
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="w-full max-w-md"
-        >
-          <Card className="backdrop-blur-xl bg-white/90 shadow-2xl border-0 overflow-hidden">
-            {/* Gradient Header */}
-            <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 p-6 text-white relative overflow-hidden">
+        <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="w-full max-w-md"
+          >
+            {/* Header */}
+            <div className="text-center mb-8">
               <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"
-                animate={{
-                  x: ["-100%", "100%"],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-              <div className="relative z-10">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                  className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4"
-                >
-                  <Sparkles className="w-8 h-8 text-white" />
-                </motion.div>
-                <CardTitle className="text-2xl font-bold text-center mb-2">
-                  Gingembre Pro
-                </CardTitle>
-                <p className="text-center text-white/90 text-sm">
-                  {isLogin ? "Connexion à votre compte" : "Créer un nouveau compte"}
-                </p>
-              </div>
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring" }}
+                className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center"
+              >
+                <span className="text-3xl">🫚</span>
+              </motion.div>
+              <motion.h1
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2"
+              >
+                Protocole Gingembre
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-muted-foreground"
+              >
+                Connectez-vous pour commencer votre transformation
+              </motion.p>
             </div>
 
-            <CardContent className="p-6">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <AnimatePresence mode="wait">
-                  {!isLogin && (
-                    <motion.div
-                      key="name"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                        Nom complet
-                      </Label>
-                      <div className="relative mt-1">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            {/* Login Form */}
+            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+              <CardContent className="p-6">
+                <Tabs defaultValue="login" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsTrigger value="login">Connexion</TabsTrigger>
+                    <TabsTrigger value="signup">Inscription</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="login">
+                    <form onSubmit={handleLogin} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
                         <Input
-                          id="name"
-                          type="text"
-                          value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          className="pl-10 bg-white/50 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 transition-all duration-200"
-                          placeholder="Votre nom"
+                          id="email"
+                          type="email"
+                          placeholder="votre@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          className="bg-white/80"
                         />
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <div>
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                    Email
-                  </Label>
-                  <div className="relative mt-1">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="pl-10 bg-white/50 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 transition-all duration-200"
-                      placeholder="votre@email.com"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                    Mot de passe
-                  </Label>
-                  <div className="relative mt-1">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="pl-10 pr-10 bg-white/50 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 transition-all duration-200"
-                      placeholder="••••••••"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <AnimatePresence mode="wait">
-                  {!isLogin && (
-                    <motion.div
-                      key="confirmPassword"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-                        Confirmer le mot de passe
-                      </Label>
-                      <div className="relative mt-1">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <div className="space-y-2">
+                        <Label htmlFor="password">Mot de passe</Label>
                         <Input
-                          id="confirmPassword"
+                          id="password"
                           type="password"
-                          value={formData.confirmPassword}
-                          onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                          className="pl-10 bg-white/50 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 transition-all duration-200"
                           placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          className="bg-white/80"
                         />
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      <Button
+                        type="submit"
+                        className="w-full bg-gradient-to-r from-primary to-secondary text-white h-12"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "Connexion..." : "Se connecter"}
+                      </Button>
+                    </form>
+                  </TabsContent>
 
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
-                  >
-                    {isLoading ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                      />
-                    ) : (
-                      isLogin ? "Se connecter" : "Créer un compte"
-                    )}
-                  </Button>
-                </motion.div>
-              </form>
+                  <TabsContent value="signup">
+                    <form onSubmit={handleSignUp} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-email">Email</Label>
+                        <Input
+                          id="signup-email"
+                          type="email"
+                          placeholder="votre@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          className="bg-white/80"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-password">Mot de passe</Label>
+                        <Input
+                          id="signup-password"
+                          type="password"
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          className="bg-white/80"
+                        />
+                      </div>
+                      <Button
+                        type="submit"
+                        className="w-full bg-gradient-to-r from-primary to-secondary text-white h-12"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "Inscription..." : "S'inscrire"}
+                      </Button>
+                    </form>
+                  </TabsContent>
+                </Tabs>
 
-              <div className="mt-6 text-center">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="text-sm text-gray-600 hover:text-orange-600 transition-colors duration-200 font-medium"
-                >
-                  {isLogin ? "Pas encore de compte ? Créer un compte" : "Déjà un compte ? Se connecter"}
-                </motion.button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+                {/* Mode démo */}
+                {!isSupabaseReady() && (
+                  <div className="mt-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-xs text-blue-700 text-center">
+                      Mode démo activé - Utilisez n'importe quel email et mot de passe
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Footer */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="text-center mt-6"
+            >
+              <p className="text-xs text-muted-foreground">
+                En vous connectant, vous acceptez nos conditions d'utilisation
+              </p>
+            </motion.div>
+          </motion.div>
+        </div>
       </div>
-    </div>
+
+      {/* Guide d'installation */}
+      <AnimatePresence>
+        {showInstallGuide && (
+          <InstallAppGuide
+            onClose={handleInstallGuideClose}
+            onContinue={handleInstallGuideContinue}
+          />
+        )}
+      </AnimatePresence>
+    </>
   )
 }

@@ -18,7 +18,8 @@ import {
   Leaf,
   Coffee,
   Users,
-  Award
+  Award,
+  ClipboardList
 } from "lucide-react"
 import Link from "next/link"
 import ProgressRing from "@/components/progress-ring"
@@ -244,14 +245,14 @@ export default function AccueilPage() {
                       <span className="text-xs font-medium text-green-800">Liste</span>
                     </motion.div>
                   </Link>
-                  <Link href="/protocole">
+                  <Link href="/quiz">
                     <motion.div
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       className="flex flex-col items-center p-3 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border border-blue-200"
                     >
-                      <BookOpen className="h-5 w-5 text-blue-600 mb-1" />
-                      <span className="text-xs font-medium text-blue-800">Protocole</span>
+                      <ClipboardList className="h-5 w-5 text-blue-600 mb-1" />
+                      <span className="text-xs font-medium text-blue-800">Quiz</span>
                     </motion.div>
                   </Link>
                 </div>
