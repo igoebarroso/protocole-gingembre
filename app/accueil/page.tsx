@@ -73,9 +73,12 @@ export default function AccueilPage() {
             ))}
           </div>
 
+          {/* Overlay sombre pour améliorer la lisibilité */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+
           <div className="relative z-10 p-4 text-white">
             <motion.h1 
-              className="text-xl font-bold mb-1"
+              className="text-xl font-bold mb-1 drop-shadow-lg"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
@@ -83,7 +86,7 @@ export default function AccueilPage() {
               Bonjour ! 👋
             </motion.h1>
             <motion.p 
-              className="text-white/90 text-sm"
+              className="text-white/95 text-sm drop-shadow-md font-medium"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
