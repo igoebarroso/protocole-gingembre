@@ -269,14 +269,7 @@ export default function LoginPage() {
                   </TabsContent>
                 </Tabs>
 
-                {/* Mode démo */}
-                {!isSupabaseReady() && (
-                  <div className="mt-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <p className="text-xs text-blue-700 text-center">
-                      Mode démo activé - Utilisez n'importe quel email et mot de passe
-                    </p>
-                  </div>
-                )}
+
               </CardContent>
             </Card>
 
