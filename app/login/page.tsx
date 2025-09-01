@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState } from "react"
+import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,23 +11,12 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { isSupabaseReady } from "@/lib/supabase"
 import { toast } from "sonner"
-import InstallAppGuide from "@/components/install-app-guide"
 
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [showInstallGuide, setShowInstallGuide] = useState(false)
-  const [hasSeenInstallGuide, setHasSeenInstallGuide] = useState(false)
-
-  useEffect(() => {
-    // Vérifier si l'utilisateur a déjà vu le guide d'installation
-    const seen = localStorage.getItem("has-seen-install-guide")
-    if (!seen) {
-      setShowInstallGuide(true)
-    }
-  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,15 +88,7 @@ export default function LoginPage() {
     }
   }
 
-  const handleInstallGuideClose = () => {
-    setShowInstallGuide(false)
-    localStorage.setItem("has-seen-install-guide", "true")
-  }
 
-  const handleInstallGuideContinue = () => {
-    setShowInstallGuide(false)
-    localStorage.setItem("has-seen-install-guide", "true")
-  }
 
   return (
     <>
@@ -287,16 +268,6 @@ export default function LoginPage() {
           </motion.div>
         </div>
       </div>
-
-      {/* Guide d'installation */}
-      <AnimatePresence>
-        {showInstallGuide && (
-          <InstallAppGuide
-            onClose={handleInstallGuideClose}
-            onContinue={handleInstallGuideContinue}
-          />
-        )}
-      </AnimatePresence>
     </>
   )
 }
